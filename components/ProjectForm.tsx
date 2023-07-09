@@ -2,7 +2,7 @@
 
 import { SessionInterface } from "@/common.types";
 import Image from "next/image";
-import React, { ChangeEvent } from "react";
+import React, { ChangeEvent, useState } from "react";
 import FormField from "./FormField";
 import { categoryFilters } from "@/constants";
 import CustomMenu from "./CustomMenu";
@@ -14,12 +14,39 @@ type Props = {
 
 const ProjectForm = ({ type, session }: Props) => {
   const handleFormSubmit = (e: React.FormEvent) => {};
-  const handleChangeImage = (e: ChangeEvent<HTMLInputElement>) => {};
-  const handleStateChange = (fieldName: string, value: string) => {};
-  const form = {
+  const handleChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.includes("image")) {
+      return alert("Please upload an image file");
+    }
+
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+
+    reader.onload = () => {
+      const result = reader.result as string;
+      handleStateChange("image", result);
+    };
+  };
+  const handleStateChange = (fieldName: string, value: string) => {
+    setForm((prevState) => ({ ...prevState, [fieldName]: value }));
+  };
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [form, setForm] = useState({
     image: "",
     title: "",
-  };
+    description: "",
+    liveSiteUrl: "",
+    githubUrl: "",
+    category: "",
+  });
   return (
     <form onSubmit={handleFormSubmit} className="flexStart form">
       <div className="flexStart form_image-container">
@@ -51,6 +78,7 @@ const ProjectForm = ({ type, session }: Props) => {
         setState={(value) => handleStateChange("title", value)}
       />
       <FormField
+        isTextArea={true}
         title="Description"
         state={form.description}
         placeholder="Showcase and discover remarkable developers projects."
@@ -61,7 +89,7 @@ const ProjectForm = ({ type, session }: Props) => {
         title="Website"
         state={form.liveSiteUrl}
         placeholder="https://bakiwebdev.com"
-        setState={(value) => handleStateChange("title", value)}
+        setState={(value) => handleStateChange("liveSiteUrl", value)}
       />
       <FormField
         type="url"
